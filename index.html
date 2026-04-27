@@ -271,6 +271,36 @@
     }
     footer p { font-family: 'Space Mono', monospace; font-size: 0.68rem; color: var(--muted); letter-spacing: 0.1em; }
 
+    /* ── LIGHTBOX ── */
+    #lightbox {
+      display: none; position: fixed; inset: 0; z-index: 999;
+      background: rgba(0,0,0,0.92);
+      align-items: center; justify-content: center;
+      cursor: zoom-out;
+      backdrop-filter: blur(6px);
+    }
+    #lightbox.open { display: flex; }
+    #lightbox img {
+      max-width: 90vw; max-height: 88vh;
+      object-fit: contain;
+      border: 1px solid var(--border);
+      box-shadow: 0 0 80px rgba(0,0,0,0.8);
+      animation: lbIn .25s ease;
+      cursor: default;
+    }
+    #lightbox-close {
+      position: absolute; top: 1.4rem; right: 1.8rem;
+      font-family: 'Space Mono', monospace; font-size: 1.4rem;
+      color: var(--muted); cursor: pointer; line-height: 1;
+      transition: color .2s;
+    }
+    #lightbox-close:hover { color: var(--accent); }
+    @keyframes lbIn {
+      from { opacity: 0; transform: scale(0.94); }
+      to   { opacity: 1; transform: scale(1); }
+    }
+    .project-thumb { cursor: zoom-in; }
+
     /* ── ANIMATIONS ── */
     .fade-up {
       opacity: 0; transform: translateY(30px);
@@ -460,6 +490,12 @@
     <p>Data Science Student</p>
   </footer>
 
+  <!-- LIGHTBOX -->
+  <div id="lightbox">
+    <span id="lightbox-close" title="Close">✕</span>
+    <img id="lightbox-img" src="" alt="Project full view" />
+  </div>
+
   <script>
     // Fade-up on scroll
     const observer = new IntersectionObserver((entries) => {
@@ -467,14 +503,35 @@
     }, { threshold: 0.12 });
     document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
 
-    // Replace placeholder images with actual uploaded screenshots
-    // Map project images by their order
-    const projectCards = document.querySelectorAll('.project-card');
-    const projectImages = [
-      '/mnt/user-data/uploads/1777269255865_image.png', // Devil's Advocate AI (red)
-      '/mnt/user-data/uploads/1777269655245_image.png', // Winx (blue)
-      '/mnt/user-data/uploads/1777269878024_image.png', // Haikyuu (orange)
-    ];
+    // Lightbox
+    const lightbox = document.getElementById('lightbox');
+    const lightboxImg = document.getElementById('lightbox-img');
+
+    function openLightbox(src) {
+      lightboxImg.src = src;
+      lightbox.classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+    function closeLightbox() {
+      lightbox.classList.remove('open');
+      document.body.style.overflow = '';
+    }
+
+    // Click on project thumb image opens lightbox
+    document.querySelectorAll('.project-thumb img').forEach(img => {
+      img.addEventListener('click', (e) => {
+        e.stopPropagation();
+        openLightbox(img.src);
+      });
+    });
+
+    // Close on backdrop click or close button
+    lightbox.addEventListener('click', closeLightbox);
+    lightboxImg.addEventListener('click', e => e.stopPropagation());
+    document.getElementById('lightbox-close').addEventListener('click', closeLightbox);
+
+    // Close on Escape key
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
   </script>
 </body>
 </html>
